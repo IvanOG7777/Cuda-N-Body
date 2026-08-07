@@ -23,7 +23,7 @@ struct Particle {
     Particle() : mass(0.0f){}
 };
 
-const Particle SENTINEL_PARTICLE;
+const __host__ __device__ Particle SENTINEL_PARTICLE;
 
 inline __host__ __device__ float3 operator-(const float3 &a, const float3 &b) {
     return {a.x - b.x, a.y - b.y, a.z - b.z};
@@ -53,10 +53,10 @@ inline __host__ __device__ float3 operator/(const float scalar, const float3 &a)
     return a / scalar;
 }
 
-__device__ float3 kernelDisplacementAB(Particle &particleA, Particle &particleB);
-__device__ float kernelDistanceAB(Particle &particleA, Particle &particleB);
-__device__ float kernelDistanceSquaredAB(Particle &particleA, Particle &particleB);
-__device__ float3 kernelDirectionAB(Particle &particleA, Particle &particleB);
+__device__ float3 kernelDisplacementAB(const Particle &particleA, const Particle &particleB);
+__device__ float kernelDistanceAB(const Particle &particleA, const  Particle &particleB);
+__device__ float kernelDistanceSquaredAB(const Particle &particleA, const Particle &particleB);
+__device__ float3 kernelDirectionAB(const Particle &particleA, const Particle &particleB);
 
 __global__ void kernelUpdateParticles(Particle *particles, float dt);
 
