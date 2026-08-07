@@ -58,7 +58,6 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
     if (sharedParticles[localThreadIndex].mass != 0.0f) {
         float3 newPosition = {};
         float3 newVelocity = {};
-        float3 newAcceleration = {};
         float3 summedAcceleration = {};
 
         newPosition = sharedParticles->position + sharedParticles->velocity * dt;
@@ -67,8 +66,16 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
         for (int i = 0; i < TPB; i++) {
             if (i == localThreadIndex) continue;
 
-            float3 currentAcceleration =
+            float3 currentAcceleration = kernelAcceleration(sharedParticles[localThreadIndex], sharedParticles[i], sharedParticles[i].mass);
+
+            summedAcceleration.x += currentAcceleration.x;
+            summedAcceleration.y += currentAcceleration.y;
+            summedAcceleration.z += currentAcceleration.z;
         }
+
+        sharedParticles[localThreadIndex].position = newPosition;
+        sharedParticles[localThreadIndex].velocity = newVelocity;
+        sharedParticles[localThreadIndex].acceleration = summedAcceleration;
     } else return;
 
 }
