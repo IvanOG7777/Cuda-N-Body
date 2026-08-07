@@ -5,14 +5,6 @@
 #include <cassert>
 #include "Tiled-N-Body-Header.h"
 
-constexpr int N_PARTICLES = 100;
-constexpr int TPB = 64;
-constexpr int BLOCKS = (N_PARTICLES + TPB - 1) / TPB;
-constexpr float DT = 0.016f;
-constexpr float MAX_TIME = 10.0f;
-constexpr float G = 1.0f;
-constexpr float SOFTENING = 0.01f;
-
 
 int main() {
 
