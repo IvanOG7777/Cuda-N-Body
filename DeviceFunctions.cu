@@ -2,8 +2,6 @@
 // Created by elder on 8/6/2026.
 //
 
-#include <curand_kernel.h>
-#include <math_functions.h>
 #include "Tiled-N-Body-Header.h"
 
 __device__ float3 kernelDisplacementAB(const Particle &particleA, const Particle &particleB) {
@@ -15,13 +13,13 @@ __device__ float kernelDistanceAB(const Particle &particleA, const Particle &par
     return sqrtf(displacement.x * displacement.x + displacement.y * displacement.y + displacement.z * displacement.z);
 }
 
-__device__ float kernelDistanceSquaredAB(Particle &particleA, Particle &particleB) {
+__device__ float kernelDistanceSquaredAB(const Particle &particleA, const Particle &particleB) {
     float3 displacement = kernelDisplacementAB(particleA, particleB);
 
     return displacement.x * displacement.x + displacement.y * displacement.y + displacement.z * displacement.z;
 }
 
-__device__ float3 kernelDirectionVectorNormalAB(Particle &particleA, Particle &particleB) {
+__device__ float3 kernelDirectionVectorNormalAB(const Particle &particleA, const Particle &particleB) {
     float3 displacement = kernelDisplacementAB(particleA, particleB);
 
     float length = kernelDistanceAB(particleA, particleB);
@@ -32,7 +30,7 @@ __device__ float3 kernelDirectionVectorNormalAB(Particle &particleA, Particle &p
 }
 
 __device__ float3 kernelAcceleration(const Particle &particleA, const Particle &particleB, const float &massB) {
-    float3 direction = kernelDirectionAB(particleA, particleB);
+    float3 direction = kernelDirectionVectorNormalAB(particleA, particleB);
     float distanceSquared = kernelDistanceSquaredAB(particleA, particleB);
 
     float accelerationMagnitude = (G * massB) / (distanceSquared + (SOFTENING * SOFTENING));
@@ -52,7 +50,7 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
     if (globalIndex < N_PARTICLES) {
         sharedParticles[localThreadIndex] = particles[globalIndex];
     } else {
-        sharedParticles[localThreadIndex] = SENTINEL_PARTICLE;
+        sharedParticles[localThreadIndex] = Particle{};
     }
     __syncthreads();
 
@@ -61,8 +59,8 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
         float3 newVelocity = {};
         float3 summedAcceleration = {};
 
-        newPosition = sharedParticles->position + sharedParticles->velocity * dt;
-        newVelocity = sharedParticles->velocity + sharedParticles->acceleration *dt;
+        newPosition = sharedParticles[localThreadIndex].position + sharedParticles[localThreadIndex].velocity * dt;
+        newVelocity = sharedParticles[localThreadIndex].velocity + sharedParticles[localThreadIndex].acceleration *dt;
 
         // Total acceleration sum
         for (int i = 0; i < TPB; i++) {
@@ -99,9 +97,9 @@ __device__ float3 randFloat3(curandState *state) {
     float3 rand;
 
     // pulls a single floating number from the generated states sequence of numbers.
-    rand.x = curand_uniform(state);
-    rand.y = curand_uniform(state);
-    rand.z = curand_uniform(state);
+    rand.x = curand_uniform(state) * 10.0f;
+    rand.y = curand_uniform(state) * 10.0f;
+    rand.z = curand_uniform(state) * 10.0f;
 
     return rand;
 }

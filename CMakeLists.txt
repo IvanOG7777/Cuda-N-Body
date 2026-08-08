@@ -20,4 +20,5 @@ add_executable(Naive-N-Body
 add_executable(Tiled-N-Body
         Tiled-N-Body.cu
         Tiled-N-Body-Header.h
+        DeviceFunctions.cu
 )
