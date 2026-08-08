@@ -86,9 +86,19 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
     }
 }
 
+// pass in empty states array pointer and a seed
+__device__ void initState(curandState *states, const unsigned int seed) {
+    int globalIndex = blockIdx.x * blockDim.x + threadIdx.x; // get threads global index
+
+    // creates "infinite" sequence of floats for current thread
+    curand_init(seed, globalIndex, 0, &states[globalIndex]);
+}
+
+// pass curandState that allows per thread randomness
 __device__ float3 randFloat3(curandState *state) {
     float3 rand;
 
+    // pulls a single floating number from the generated states sequence of numbers.
     rand.x = curand_uniform(state);
     rand.y = curand_uniform(state);
     rand.z = curand_uniform(state);
@@ -96,8 +106,23 @@ __device__ float3 randFloat3(curandState *state) {
     return rand;
 }
 
-__global__ void loadParticles(Particle *deviceOut) {
+__global__ void loadParticles(Particle *particles, curandState *states, const unsigned int seed) {
     unsigned int globalIndex = blockIdx.x * blockDim.x + threadIdx.x;
 
+    if (globalIndex >= N_PARTICLES) return;
 
+    // init state per thread
+    initState(states, seed);
+
+    float3 position{};
+    float3 velocity{};
+    float3 acceleration{};
+
+    position = randFloat3(&states[globalIndex]);
+    velocity = randFloat3(&states[globalIndex]);
+    acceleration = randFloat3(&states[globalIndex]);
+
+    particles[globalIndex].position = position;
+    particles[globalIndex].velocity = velocity;
+    particles[globalIndex].acceleration = acceleration;
 }
