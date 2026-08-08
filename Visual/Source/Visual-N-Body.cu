@@ -6,9 +6,37 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include "../Header/Tiled-N-Body-Header.h"
+#include "../Header/Visual-N-Body-Header.h"
+#include "../Header/GLUtils.h"
 
 int main() {
+
+    if (!glfwInit()) {
+        std:: cerr << "Failed to load GLFW" << std:: endl;
+        exit(EXIT_FAILURE);
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow *window = createWindow(1280, 800, "Visual-N-Body-Simulation");
+    glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        std::cerr << "GLAD INIT ERROR\n";
+        return -1;
+    }
+
+    while (!glfwWindowShouldClose(window)) {
+        std:: cout << "Running window" << std:: endl;
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    std:: cout << "Window closed" << std:: endl;
 
     Particle *deviceParticles = nullptr;
     curandState *deviceStates = nullptr;

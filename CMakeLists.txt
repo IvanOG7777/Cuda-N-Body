@@ -24,10 +24,12 @@ add_executable(Tiled-N-Body
 )
 
 add_executable(Visual-N-Body
-        Visual/Source/Tiled-N-Body.cu
-        Visual/Header/Tiled-N-Body-Header.h
+        Visual/Source/Visual-N-Body.cu
+        Visual/Header/Visual-N-Body-Header.h
         Visual/Source/DeviceFunctions.cu
         Visual/Source/glad.c
+        Visual/Header/GLUtils.h
+        Visual/Source/GLUtils.cpp
 )
 
 target_include_directories(Visual-N-Body PRIVATE

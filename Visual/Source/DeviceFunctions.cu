@@ -4,7 +4,7 @@
 
 #include <sys/stat.h>
 
-#include "../Header/Tiled-N-Body-Header.h"
+#include "../Header/Visual-N-Body-Header.h"
 
 __device__ float3 kernelDisplacementAB(const Particle &particleA, const Particle &particleB) {
     return particleB.position - particleA.position;

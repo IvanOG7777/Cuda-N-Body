@@ -2,8 +2,8 @@
 // Created by elder on 8/6/2026.
 //
 
-#ifndef CUDAPRACTICE_TILED_N_BODY_HEADER_H
-#define CUDAPRACTICE_TILED_N_BODY_HEADER_H
+#ifndef CUDAPRACTICE_VISUAL_N_BODY_HEADER_H
+#define CUDAPRACTICE_VISUAL_N_BODY_HEADER_H
 
 #include <curand_kernel.h>
 #include <cuda_runtime.h>
@@ -65,4 +65,4 @@ __global__ void loadParticles(Particle *particles, curandState *states, const un
 
 
 
-#endif //CUDAPRACTICE_TILED_N_BODY_HEADER_H
+#endif //CUDAPRACTICE_VISUAL_N_BODY_HEADER_H
