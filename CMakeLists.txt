@@ -14,11 +14,27 @@ set(CMAKE_CUDA_ARCHITECTURES 86)
 
 
 add_executable(Naive-N-Body
-        Naive-N-Body.cu
+        Naive/Naive-N-Body.cu
 )
 
 add_executable(Tiled-N-Body
-        Tiled-N-Body.cu
-        Tiled-N-Body-Header.h
-        DeviceFunctions.cu
+        Tiled/Tiled-N-Body.cu
+        Tiled/Tiled-N-Body-Header.h
+        Tiled/DeviceFunctions.cu
+)
+
+add_executable(Visual-N-Body
+        Visual/Source/Tiled-N-Body.cu
+        Visual/Header/Tiled-N-Body-Header.h
+        Visual/Source/DeviceFunctions.cu
+        Visual/Source/glad.c
+)
+
+target_include_directories(Visual-N-Body PRIVATE
+        ${CMAKE_SOURCE_DIR}/Visual/Libraries/include
+)
+
+target_link_libraries(Visual-N-Body PRIVATE
+        ${CMAKE_SOURCE_DIR}/Visual/Libraries/lib/glfw3.lib
+        opengl32
 )
