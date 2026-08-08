@@ -2,6 +2,8 @@
 // Created by elder on 8/6/2026.
 //
 
+#include <sys/stat.h>
+
 #include "Tiled-N-Body-Header.h"
 
 __device__ float3 kernelDisplacementAB(const Particle &particleA, const Particle &particleB) {
@@ -104,6 +106,16 @@ __device__ float3 randFloat3(curandState *state) {
     return rand;
 }
 
+
+__device__ float randFloat(curandState *state) {
+    float rand;
+
+    // pulls a single floating number from the generated states sequence of numbers.
+   rand = curand_uniform(state) * 10.0f;
+
+    return rand;
+}
+
 __global__ void loadParticles(Particle *particles, curandState *states, const unsigned int seed) {
     unsigned int globalIndex = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -112,15 +124,8 @@ __global__ void loadParticles(Particle *particles, curandState *states, const un
     // init state per thread
     initState(states, seed);
 
-    float3 position{};
-    float3 velocity{};
-    float3 acceleration{};
-
-    position = randFloat3(&states[globalIndex]);
-    velocity = randFloat3(&states[globalIndex]);
-    acceleration = randFloat3(&states[globalIndex]);
-
-    particles[globalIndex].position = position;
-    particles[globalIndex].velocity = velocity;
-    particles[globalIndex].acceleration = acceleration;
+    particles[globalIndex].position = randFloat3(&states[globalIndex]);
+    particles[globalIndex].velocity = randFloat3(&states[globalIndex]);
+    particles[globalIndex].acceleration = randFloat3(&states[globalIndex]);
+    particles[globalIndex].mass = randFloat(&states[globalIndex]);
 }

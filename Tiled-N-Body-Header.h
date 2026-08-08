@@ -8,8 +8,8 @@
 #include <curand_kernel.h>
 #include <cuda_runtime.h>
 
-constexpr int N_PARTICLES = 100;
-constexpr int TPB = 64;
+constexpr int N_PARTICLES = 100000;
+constexpr int TPB = 256;
 constexpr int BLOCKS = (N_PARTICLES + TPB - 1) / TPB;
 constexpr  int STRIDE = (TPB + 2 - 1) / 2;
 constexpr float DT = 0.016f;

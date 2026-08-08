@@ -25,6 +25,7 @@ int main() {
         printf("Position (%.2f, %.2f, %.2f)\n", hostParticles[i].position.x, hostParticles[i].position.y, hostParticles[i].position.z);
         printf("Velocity (%.2f, %.2f, %.2f)\n", hostParticles[i].velocity.x, hostParticles[i].velocity.y, hostParticles[i].velocity.z);
         printf("Acceleration (%.2f, %.2f, %.2f)\n", hostParticles[i].acceleration.x, hostParticles[i].acceleration.y, hostParticles[i].acceleration.z);
+        printf("Mass: %.2f\n", hostParticles[i].mass);
         printf("\n");
     }
 
@@ -48,7 +49,6 @@ int main() {
         printf("Acceleration (%.2f, %.2f, %.2f)\n", hostParticles[i].acceleration.x, hostParticles[i].acceleration.y, hostParticles[i].acceleration.z);
         printf("\n");
     }
-
 
     cudaFree(deviceParticles);
     cudaFree(deviceStates);
