@@ -2,6 +2,7 @@
 // Created by elder on 8/6/2026.
 //
 
+#include <curand_kernel.h>
 #include <math_functions.h>
 #include "Tiled-N-Body-Header.h"
 
@@ -63,6 +64,7 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
         newPosition = sharedParticles->position + sharedParticles->velocity * dt;
         newVelocity = sharedParticles->velocity + sharedParticles->acceleration *dt;
 
+        // Total acceleration sum
         for (int i = 0; i < TPB; i++) {
             if (i == localThreadIndex) continue;
 
@@ -73,9 +75,29 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt) {
             summedAcceleration.z += currentAcceleration.z;
         }
 
+        // place new values to current particle at local thread
         sharedParticles[localThreadIndex].position = newPosition;
         sharedParticles[localThreadIndex].velocity = newVelocity;
         sharedParticles[localThreadIndex].acceleration = summedAcceleration;
     } else return;
+
+    if (globalIndex < N_PARTICLES) {
+        particles[globalIndex] = sharedParticles[localThreadIndex];
+    }
+}
+
+__device__ float3 randFloat3(curandState *state) {
+    float3 rand;
+
+    rand.x = curand_uniform(state);
+    rand.y = curand_uniform(state);
+    rand.z = curand_uniform(state);
+
+    return rand;
+}
+
+__global__ void loadParticles(Particle *deviceOut) {
+    unsigned int globalIndex = blockIdx.x * blockDim.x + threadIdx.x;
+
 
 }
