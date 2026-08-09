@@ -6,7 +6,6 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include "../Header/Visual-N-Body-Header.h"
 #include "../Header/GLUtils.h"
 
 int main() {
@@ -26,6 +25,10 @@ int main() {
         std::cerr << "GLAD INIT ERROR\n";
         return -1;
     }
+
+    GLuint VAO = 0, VBO = 0;
+
+    setVAO(VAO, VBO, GL_DYNAMIC_DRAW);
 
     while (!glfwWindowShouldClose(window)) {
         std:: cout << "Running window" << std:: endl;

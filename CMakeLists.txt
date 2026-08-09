@@ -29,7 +29,7 @@ add_executable(Visual-N-Body
         Visual/Source/DeviceFunctions.cu
         Visual/Source/glad.c
         Visual/Header/GLUtils.h
-        Visual/Source/GLUtils.cpp
+        Visual/Source/GLUtils.cu
 )
 
 target_include_directories(Visual-N-Body PRIVATE

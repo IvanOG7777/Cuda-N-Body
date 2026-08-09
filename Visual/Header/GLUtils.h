@@ -9,6 +9,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "../../Tiled/Tiled-N-Body-Header.h"
+
 GLFWwindow *createWindow(int w, int h, const char *title);
+
+const char *vertexShader(const std:: string type);
+
+const char *fragmentShader(const std:: string type);
+
+void setVAO(GLuint &VAO, GLuint &VBO, GLenum drawHint);
+
 
 #endif //CUDAPRACTICE_GLUTILS_H
