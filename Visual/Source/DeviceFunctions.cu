@@ -99,9 +99,10 @@ __device__ float3 randFloat3(curandState *state) {
     float3 rand;
 
     // pulls a single floating number from the generated states sequence of numbers.
-    rand.x = curand_uniform(state) * 10.0f;
-    rand.y = curand_uniform(state) * 10.0f;
-    rand.z = curand_uniform(state) * 10.0f;
+    // control spread around screens
+    rand.x = (curand_uniform(state) - 0.5f) * 50.0f;
+    rand.y = (curand_uniform(state) - 0.5f) * 50.0f;
+    rand.z = (curand_uniform(state) - 0.5f) * 50.0f;
 
     return rand;
 }

@@ -36,7 +36,7 @@ const char *createVertexShader(const std::string type) {
 
             void main() {
                 gl_Position = uMVP * vec4(aPos, 1.0);
-                gl_PointSize = 10.0;
+                gl_PointSize = 2.0;
 
                 float speed = length(aVel);
                 float t = clamp(speed / 10.0, 0.0, 1.0);

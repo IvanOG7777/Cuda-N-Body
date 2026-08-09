@@ -64,7 +64,7 @@ int main() {
     float far = 1000;
 
     Camera camera;
-    camera.setPosition(0, 0, 20);
+    camera.setPosition(5, 5, 15);
     glm::mat4 view;
     glm:: mat4 particleMVP;
     glm::mat4 perspectiveMatrix = glm::perspective(fov, aspect, near, far);
@@ -83,6 +83,7 @@ int main() {
 
 
 
+    glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
