@@ -2,10 +2,15 @@
 // Created by elder on 8/6/2026.
 //
 
+#include <iostream>
+
+#include <cuda_gl_interop.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm/glm.hpp>
+#include <glm/glm/gtc/matrix_transform.hpp>
 
-#include <iostream>
 #include "../Header/GLUtils.h"
 
 int main() {
@@ -55,11 +60,30 @@ int main() {
     glDeleteShader(VS);
     glDeleteShader(FS);
 
+    cudaGraphicsResource *cudaResource;
+
+    // Tell cuda to use allocated VBO from opengl. It will write to it and not read
+    // Do this once because its memory intensive
+    cudaGraphicsGLRegisterBuffer(&cudaResource, VBO, cudaGraphicsMapFlagsWriteDiscard);
+
     GLint uMVP = glGetUniformLocation(program, "uMVP");
+
+    float fov = glm::radians(45.0f);
+    float aspect = 1280.0f/800.0f;
+    float near = 0.1;
+    float far = 1000;
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        size_t numBytes = 0;
+
+        cudaGraphicsMapResources(1, &cudaResource, nullptr);
+
+        cudaGraphicsResourceGetMappedPointer((void**)&deviceParticles, &numBytes, cudaResource);
+
+        kernelUpdateParticles<<<BLOCKS, TPB>>>(deviceParticles, DT);
+        cudaDeviceSynchronize();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
