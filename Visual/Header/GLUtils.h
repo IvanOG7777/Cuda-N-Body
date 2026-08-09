@@ -9,8 +9,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../../Tiled/Tiled-N-Body-Header.h"
-
 GLFWwindow *createWindow(int w, int h, const char *title);
 
 const char *createVertexShader(const std::string type);

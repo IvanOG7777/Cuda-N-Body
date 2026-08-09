@@ -116,7 +116,7 @@ __device__ float randFloat(curandState *state) {
     return rand;
 }
 
-__global__ void loadParticles(Particle *particles, curandState *states, const unsigned int seed) {
+__global__ void kernelLoadParticles(Particle *particles, curandState *states, const unsigned int seed) {
     unsigned int globalIndex = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (globalIndex >= N_PARTICLES) return;

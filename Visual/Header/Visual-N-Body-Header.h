@@ -8,7 +8,7 @@
 #include <curand_kernel.h>
 #include <cuda_runtime.h>
 
-constexpr int N_PARTICLES = 10000;
+constexpr int N_PARTICLES = 100000;
 constexpr int TPB = 256;
 constexpr int BLOCKS = (N_PARTICLES + TPB - 1) / TPB;
 constexpr  int STRIDE = (TPB + 2 - 1) / 2;
@@ -61,7 +61,7 @@ __global__ void kernelUpdateParticles(Particle *particles, float dt);
 
 __device__ void initState(curandState *states, const unsigned int seed);
 __device__ float3 randFloat3(curandState *state);
-__global__ void loadParticles(Particle *particles, curandState *states, const unsigned int seed);
+__global__ void kernelLoadParticles(Particle *particles, curandState *states, const unsigned int seed);
 
 
 

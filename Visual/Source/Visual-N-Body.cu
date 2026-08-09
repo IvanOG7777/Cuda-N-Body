@@ -4,15 +4,17 @@
 
 #include <iostream>
 
-#include <cuda_gl_interop.h>
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm/glm.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
+
+#include <cuda_gl_interop.h>
 
 #include "../Header/GLUtils.h"
 #include "../Header/Camera.h"
+#include "../Header/Visual-N-Body-Header.h"
 
 int main() {
 
@@ -25,7 +27,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = createWindow(1280, 800, "Visual-N-Body-Simulation");
+    GLFWwindow *window = createWindow(1920, 1080, "Visual-N-Body-Simulation");
     glfwMakeContextCurrent(window);
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cerr << "GLAD INIT ERROR\n";
@@ -35,14 +37,7 @@ int main() {
     Particle *deviceParticles = nullptr;
     curandState *deviceStates = nullptr;
 
-    cudaMalloc(&deviceParticles, N_PARTICLES * sizeof(Particle));
     cudaMalloc(&deviceStates, N_PARTICLES * sizeof(curandState));
-
-    // loads particles with data
-    loadParticles<<<BLOCKS, TPB>>>(deviceParticles, deviceStates, 1234ULL);
-    cudaDeviceSynchronize();
-
-    Particle *hostParticles = static_cast<Particle *>(malloc(N_PARTICLES * sizeof(Particle)));
 
     GLuint VAO = 0, VBO = 0;
 
@@ -64,7 +59,7 @@ int main() {
     GLint uMVP = glGetUniformLocation(program, "uMVP");
 
     float fov = glm::radians(45.0f);
-    float aspect = 1280.0f/800.0f;
+    float aspect = 1920.0f/1080.0f;
     float near = 0.1;
     float far = 1000;
 
@@ -74,31 +69,40 @@ int main() {
     glm:: mat4 particleMVP;
     glm::mat4 perspectiveMatrix = glm::perspective(fov, aspect, near, far);
 
-    cudaGraphicsResource *cudaResource;
+    cudaGraphicsResource *cudaRenderResource;
+
 
     // Tell cuda to use allocated VBO from opengl. It will write to it and not read
     // Do this once because its memory intensive
-    cudaGraphicsGLRegisterBuffer(&cudaResource, VBO, cudaGraphicsMapFlagsWriteDiscard);
+    cudaGraphicsGLRegisterBuffer(&cudaRenderResource, VBO, cudaGraphicsMapFlagsWriteDiscard);
+    size_t bytes = 0;
+    cudaGraphicsMapResources(1, &cudaRenderResource, nullptr); // give ownership to cuda
+    cudaGraphicsResourceGetMappedPointer((void**)&deviceParticles, &bytes, cudaRenderResource); //map data
+    kernelLoadParticles<<<BLOCKS, TPB>>>(deviceParticles, deviceStates, 1234ULL); // run kernel
+    cudaGraphicsUnmapResources(1, &cudaRenderResource, nullptr); //return ownership back to openGL
+
+
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         size_t numBytes = 0;
 
-        cudaGraphicsMapResources(1, &cudaResource, nullptr);
+        cudaGraphicsMapResources(1, &cudaRenderResource, nullptr);
 
-        cudaGraphicsResourceGetMappedPointer((void**)&deviceParticles, &numBytes, cudaResource);
+        cudaGraphicsResourceGetMappedPointer((void**)&deviceParticles, &numBytes, cudaRenderResource);
 
         kernelUpdateParticles<<<BLOCKS, TPB>>>(deviceParticles, DT);
         cudaDeviceSynchronize();
 
-        cudaGraphicsUnmapResources(1, &cudaResource, nullptr);
+        cudaGraphicsUnmapResources(1, &cudaRenderResource, nullptr);
 
         glUseProgram(program);
 
         view = camera.getViewMatrix();
 
         particleMVP = perspectiveMatrix * view * glm::mat4(1.0f);
+        glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(particleMVP));
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_POINTS, 0, N_PARTICLES);
@@ -108,13 +112,11 @@ int main() {
         glfwSwapBuffers(window);
     }
 
+    cudaGraphicsUnregisterResource(cudaRenderResource);
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    cudaFree(deviceParticles);
     cudaFree(deviceStates);
-
-    free(hostParticles);
 
     return 0;
 }

@@ -3,6 +3,7 @@
 //
 
 #include "../Header/GLUtils.h"
+#include "../../Tiled/Tiled-N-Body-Header.h"
 
 GLFWwindow *createWindow(const int w, const int h, const char *title) {
     if (w == 0 || h == 0) {
@@ -35,7 +36,7 @@ const char *createVertexShader(const std::string type) {
 
             void main() {
                 gl_Position = uMVP * vec4(aPos, 1.0);
-                gl_PointSize = 3.0;
+                gl_PointSize = 10.0;
 
                 float speed = length(aVel);
                 float t = clamp(speed / 10.0, 0.0, 1.0);
