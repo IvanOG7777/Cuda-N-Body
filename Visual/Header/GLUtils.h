@@ -13,9 +13,9 @@
 
 GLFWwindow *createWindow(int w, int h, const char *title);
 
-const char *createVertexShader(const char *type);
+const char *createVertexShader(const std::string type);
 
-const char *createFragmentShader(const char *type);
+const char *createFragmentShader(const std::string type);
 
 void setVAO(GLuint &VAO, GLuint &VBO, GLenum drawHint);
 

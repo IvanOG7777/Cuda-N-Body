@@ -55,6 +55,8 @@ int main() {
     glDeleteShader(VS);
     glDeleteShader(FS);
 
+    GLint uMVP = glGetUniformLocation(program, "uMVP");
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 

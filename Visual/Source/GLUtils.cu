@@ -22,28 +22,32 @@ GLFWwindow *createWindow(const int w, const int h, const char *title) {
     return window;
 }
 
-const char *createVertexShader(const char *type) {
+const char *createVertexShader(const std::string type) {
     if (type == "glPoints") {
         return R"GLSL(
             #version 330 core
 
             layout (location = 0) in vec3 aPos;
-            layout (location = 1) in vec3 aColor;
+            layout (location = 1) in vec3 aVel;
 
-            uniform mat4 uMVP
+            uniform mat4 uMVP;
             out vec3 vertexColor;
 
             void main() {
                 gl_Position = uMVP * vec4(aPos, 1.0);
                 gl_PointSize = 3.0;
-                vertexColor = aColor;
+
+                float speed = length(aVel);
+                float t = clamp(speed / 10.0, 0.0, 1.0);
+
+                vertexColor = mix(vec3(0.1, 0.3, 1.0), vec3(1.0, 0.15, 0.1), t);
             }
         )GLSL";
     }
     return nullptr;
 }
 
-const char *createFragmentShader(const char *type) {
+const char *createFragmentShader(const std::string type) {
     if (type == "glPoints") {
         return R"GLSL(
             #version 330 core
