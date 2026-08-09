@@ -12,6 +12,7 @@
 #include <glm/glm/gtc/matrix_transform.hpp>
 
 #include "../Header/GLUtils.h"
+#include "../Header/Camera.h"
 
 int main() {
 
@@ -60,18 +61,24 @@ int main() {
     glDeleteShader(VS);
     glDeleteShader(FS);
 
-    cudaGraphicsResource *cudaResource;
-
-    // Tell cuda to use allocated VBO from opengl. It will write to it and not read
-    // Do this once because its memory intensive
-    cudaGraphicsGLRegisterBuffer(&cudaResource, VBO, cudaGraphicsMapFlagsWriteDiscard);
-
     GLint uMVP = glGetUniformLocation(program, "uMVP");
 
     float fov = glm::radians(45.0f);
     float aspect = 1280.0f/800.0f;
     float near = 0.1;
     float far = 1000;
+
+    Camera camera;
+    camera.setPosition(0, 0, 20);
+    glm::mat4 view;
+    glm:: mat4 particleMVP;
+    glm::mat4 perspectiveMatrix = glm::perspective(fov, aspect, near, far);
+
+    cudaGraphicsResource *cudaResource;
+
+    // Tell cuda to use allocated VBO from opengl. It will write to it and not read
+    // Do this once because its memory intensive
+    cudaGraphicsGLRegisterBuffer(&cudaResource, VBO, cudaGraphicsMapFlagsWriteDiscard);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
@@ -85,15 +92,24 @@ int main() {
         kernelUpdateParticles<<<BLOCKS, TPB>>>(deviceParticles, DT);
         cudaDeviceSynchronize();
 
-        glfwSwapBuffers(window);
+        cudaGraphicsUnmapResources(1, &cudaResource, nullptr);
+
+        glUseProgram(program);
+
+        view = camera.getViewMatrix();
+
+        particleMVP = perspectiveMatrix * view * glm::mat4(1.0f);
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, N_PARTICLES);
+
+
         glfwPollEvents();
+        glfwSwapBuffers(window);
     }
 
     glfwDestroyWindow(window);
     glfwTerminate();
-
-
-
 
     cudaFree(deviceParticles);
     cudaFree(deviceStates);

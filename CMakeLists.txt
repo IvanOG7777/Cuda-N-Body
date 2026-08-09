@@ -30,6 +30,8 @@ add_executable(Visual-N-Body
         Visual/Source/glad.c
         Visual/Header/GLUtils.h
         Visual/Source/GLUtils.cu
+        Visual/Header/Camera.h
+        Visual/Source/Camera.cpp
 )
 
 target_include_directories(Visual-N-Body PRIVATE
