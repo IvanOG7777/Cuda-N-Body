@@ -22,7 +22,7 @@ GLFWwindow *createWindow(const int w, const int h, const char *title) {
     return window;
 }
 
-const char *vertexShader(const std:: string type) {
+const char *createVertexShader(const char *type) {
     if (type == "glPoints") {
         return R"GLSL(
             #version 330 core
@@ -30,10 +30,11 @@ const char *vertexShader(const std:: string type) {
             layout (location = 0) in vec3 aPos;
             layout (location = 1) in vec3 aColor;
 
+            uniform mat4 uMVP
             out vec3 vertexColor;
 
             void main() {
-                gl_Position = vec4(aPos, 1.0);
+                gl_Position = uMVP * vec4(aPos, 1.0);
                 gl_PointSize = 3.0;
                 vertexColor = aColor;
             }
@@ -42,7 +43,7 @@ const char *vertexShader(const std:: string type) {
     return nullptr;
 }
 
-const char *fragmentShader(const std:: string type) {
+const char *createFragmentShader(const char *type) {
     if (type == "glPoints") {
         return R"GLSL(
             #version 330 core
@@ -65,6 +66,8 @@ void setVAO(GLuint &VAO, GLuint &VBO, GLenum drawHint) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+
+    // let cuda pass in data only allocate space within VAO and VBO
     glBufferData(GL_ARRAY_BUFFER, N_PARTICLES * sizeof(Particle), nullptr, drawHint);
 
     // location 0 within vertex for particle position
@@ -78,3 +81,13 @@ void setVAO(GLuint &VAO, GLuint &VBO, GLenum drawHint) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+
+GLuint compileShader(const char *shader, GLenum shaderType) {
+    GLuint s = glCreateShader(shaderType);
+    glShaderSource(s, 1, &shader, nullptr);
+    glCompileShader(s);
+
+    return s;
+}
+
+

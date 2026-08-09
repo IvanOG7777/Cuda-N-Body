@@ -26,64 +26,48 @@ int main() {
         return -1;
     }
 
-    GLuint VAO = 0, VBO = 0;
-
-    setVAO(VAO, VBO, GL_DYNAMIC_DRAW);
-
-    while (!glfwWindowShouldClose(window)) {
-        std:: cout << "Running window" << std:: endl;
-        glClear(GL_COLOR_BUFFER_BIT);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    std:: cout << "Window closed" << std:: endl;
-
     Particle *deviceParticles = nullptr;
     curandState *deviceStates = nullptr;
 
     cudaMalloc(&deviceParticles, N_PARTICLES * sizeof(Particle));
     cudaMalloc(&deviceStates, N_PARTICLES * sizeof(curandState));
 
+    // loads particles with data
     loadParticles<<<BLOCKS, TPB>>>(deviceParticles, deviceStates, 1234ULL);
     cudaDeviceSynchronize();
 
     Particle *hostParticles = static_cast<Particle *>(malloc(N_PARTICLES * sizeof(Particle)));
 
-    // copies data right after particles init
-    cudaMemcpy(hostParticles, deviceParticles, N_PARTICLES * sizeof(Particle), cudaMemcpyDeviceToHost);
+    GLuint VAO = 0, VBO = 0;
 
-    std:: cout << "Values before updating" << std:: endl;
-    for (int i = 0; i < 20; i++) {
-        printf("Position (%.2f, %.2f, %.2f)\n", hostParticles[i].position.x, hostParticles[i].position.y, hostParticles[i].position.z);
-        printf("Velocity (%.2f, %.2f, %.2f)\n", hostParticles[i].velocity.x, hostParticles[i].velocity.y, hostParticles[i].velocity.z);
-        printf("Acceleration (%.2f, %.2f, %.2f)\n", hostParticles[i].acceleration.x, hostParticles[i].acceleration.y, hostParticles[i].acceleration.z);
-        printf("Mass: %.2f\n", hostParticles[i].mass);
-        printf("\n");
+    setVAO(VAO, VBO, GL_DYNAMIC_DRAW);
+    const char* vertexShader = createVertexShader("glPoints");
+    const char* fragmentShader = createFragmentShader("glPoints");
+
+    GLuint VS = compileShader(vertexShader, GL_VERTEX_SHADER);
+    GLuint FS = compileShader(fragmentShader, GL_FRAGMENT_SHADER);
+
+    GLuint program = glCreateProgram();
+    glAttachShader(program, VS);
+    glAttachShader(program, FS);
+    glLinkProgram(program);
+
+    glDeleteShader(VS);
+    glDeleteShader(FS);
+
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
-    printf("\n");
-    printf("\n");
+    glfwDestroyWindow(window);
+    glfwTerminate();
 
-    float currentTime = 0.0f;
-    while (currentTime <= MAX_TIME) {
-        kernelUpdateParticles<<<BLOCKS, TPB>>>(deviceParticles, DT);
-        cudaDeviceSynchronize();
 
-        currentTime += DT;
-    }
 
-    cudaMemcpy(hostParticles, deviceParticles, N_PARTICLES * sizeof(Particle), cudaMemcpyDeviceToHost);
-
-    std:: cout << "Values after updating" << std:: endl;
-    for (int i = 0; i < 20; i++) {
-        printf("Position (%.2f, %.2f, %.2f)\n", hostParticles[i].position.x, hostParticles[i].position.y, hostParticles[i].position.z);
-        printf("Velocity (%.2f, %.2f, %.2f)\n", hostParticles[i].velocity.x, hostParticles[i].velocity.y, hostParticles[i].velocity.z);
-        printf("Acceleration (%.2f, %.2f, %.2f)\n", hostParticles[i].acceleration.x, hostParticles[i].acceleration.y, hostParticles[i].acceleration.z);
-        printf("\n");
-    }
 
     cudaFree(deviceParticles);
     cudaFree(deviceStates);
